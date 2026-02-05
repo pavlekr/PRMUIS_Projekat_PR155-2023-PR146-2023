@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public class DodatneFunkcije
+    public class Igra
     {
-        public static void IgraciHeader()
+        public StatusIgre Status { get; set; }
+        public Igra()
         {
-
+            Status = StatusIgre.POCETAK_IGRE;
         }
     }
-
 }

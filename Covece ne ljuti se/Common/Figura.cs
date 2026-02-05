@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public class Pijun
+    public class Figura
     {
         private int pozicija;
-        private bool u_kucici;
-        private bool u_cilju;
+        private bool status;
         private int do_cilja;
 
         public int Pozicija
@@ -18,36 +17,30 @@ namespace Common
             get {  return pozicija; }
             set { pozicija = value; }
         }
-        public bool U_kucici
+        public bool Status
         {
-            get { return u_kucici; }
-            set { u_kucici = value; }
+            get { return status; }
+            set { status = value; }
         }
-        public bool U_cilju
-        {
-            get { return u_cilju; }
-            set { u_cilju = value; }
-        }
+        
         public int Do_cilja
         {
             get { return do_cilja; }
             set { do_cilja = value; }
         }
 
-        public Pijun()
+        public Figura()
         {
             Pozicija = -1;
-            U_kucici = true;
-            U_cilju = false;
+            Status = false;
             Do_cilja = 0;
         }
 
-        public Pijun(int br_polja)
+        public Figura(int br_polja)
         {
             Pozicija = -1;
             Do_cilja = br_polja;
-            U_kucici = true;
-            U_cilju = false;
+            Status = false;
         }
 
         public override string ToString()

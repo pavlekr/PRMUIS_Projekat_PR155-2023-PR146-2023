@@ -13,4 +13,19 @@ namespace Common
         ZUTA,
         ZELENA
     }
+
+    public enum TipAkcije
+    {
+        AKTIVACIJA,
+        DEAKTIVACIJA,
+        POMERANJE
+    }
+
+    public enum StatusIgre
+    {
+        POCETAK_IGRE,
+        IGRAC_NA_POTEZU,
+        POZICIJE_SVIH_FIGURA,
+        ZAVRSETAK_IGRE
+    }
 }

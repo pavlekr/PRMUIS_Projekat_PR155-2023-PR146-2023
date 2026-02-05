@@ -41,10 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DodatneFunkcije.cs" />
     <Compile Include="Enumeracije.cs" />
-    <Compile Include="Igrac.cs" />
-    <Compile Include="Pijun.cs" />
+    <Compile Include="Igra.cs" />
+    <Compile Include="Korisnik.cs" />
+    <Compile Include="Figura.cs" />
+    <Compile Include="Potez.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
