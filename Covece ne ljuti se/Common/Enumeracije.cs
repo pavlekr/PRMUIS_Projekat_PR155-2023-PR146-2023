@@ -8,10 +8,10 @@ namespace Common
 {
     public enum TipBoje
     {
-        CRVENA,
-        PLAVA,
-        ZUTA,
-        ZELENA
+        CRVENA = 0,
+        PLAVA = 1,
+        ZUTA = 2,
+        ZELENA = 3
     }
 
     public enum TipAkcije

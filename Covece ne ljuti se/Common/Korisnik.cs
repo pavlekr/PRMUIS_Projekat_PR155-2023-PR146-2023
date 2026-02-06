@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Common
 {
+    [Serializable]
     public class Korisnik
     {
         private long id;
         private string username;
-        private TipBoje boja;
+        //private TipBoje boja;
         private List<Figura> figure;
         private int start;
         private int cilj;
@@ -36,12 +37,12 @@ namespace Common
         {
             get { return cilj; }
             set { cilj = value; }
-        }
+        }/*
         public TipBoje Boja
         {
             get { return boja; }
             set { boja = value; }
-        }
+        }*/
         public List<Figura> Figure
         {
             get { return figure; }
@@ -52,15 +53,15 @@ namespace Common
         {
             ID = 0;
             Username = string.Empty;
-            Boja = 0;
+            //Boja = 0;
             Figure = new List<Figura>(4);
             Start = 0;
         }
-        public Korisnik(long id, string username, TipBoje boja, int start)
+        public Korisnik(long id, string username, int start)
         {
             ID = id;
             Username = username;
-            Boja = boja;
+           // Boja = boja;
             Start = start;
             Figure = new List<Figura>(4);
 

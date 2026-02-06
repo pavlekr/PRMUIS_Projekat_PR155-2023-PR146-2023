@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Common
-{
+{ 
+    [Serializable]
     public class Figura
     {
+        
         private int pozicija;
         private bool status;
         private int do_cilja;
