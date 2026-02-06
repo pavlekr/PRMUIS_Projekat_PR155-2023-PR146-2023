@@ -56,18 +56,20 @@ namespace Common
             //Boja = 0;
             Figure = new List<Figura>(4);
             Start = 0;
+            Cilj = 0;
         }
-        public Korisnik(long id, string username, int start)
+        public Korisnik(long id, string username, int start, int velicina_table)
         {
             ID = id;
             Username = username;
            // Boja = boja;
             Start = start;
             Figure = new List<Figura>(4);
+            Cilj = (Start + velicina_table - 2) % velicina_table;
 
             for(int i = 0; i < 4; i++)
             {
-                Figure[i] = new Figura(Start);
+                Figure.Add(new Figura(Start));
             }
         }
 
