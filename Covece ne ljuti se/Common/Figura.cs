@@ -11,7 +11,7 @@ namespace Common
     {
         
         private int pozicija;
-        private bool status;
+        private bool status; // aktivna/neaktivna
         private int do_cilja;
 
         public int Pozicija

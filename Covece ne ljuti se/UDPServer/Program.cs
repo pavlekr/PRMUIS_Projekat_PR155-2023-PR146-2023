@@ -31,22 +31,14 @@ namespace Server
             serverSocketUdp.Bind(new IPEndPoint(IPAddress.Any, 50032));
             serverSocketUdp.Blocking = false;
 
-
-
             List<Socket> korisnici = new List<Socket>();
-
             List<Korisnik> Igraci = new List<Korisnik>();
-
-            List<IPAddress> IPAdreseIgraca = new List<IPAddress>();
-
+            //List<IPAddress> IPAdreseIgraca = new List<IPAddress>();
             List<string> Usernamovi = new List<string>();
 
             byte[] buffer = new byte[1024];
-
             bool kraj = false;
-
             EndPoint posiljaocEP = new IPEndPoint(IPAddress.Any, 0);
-
             List<IPEndPoint> IgraciEP = new List<IPEndPoint>();
             int velicinatable = 0;
             do
@@ -58,6 +50,7 @@ namespace Server
             try
             {
 
+                #region TCP povezivanje
                 while (true) 
                 {
                     List<Socket> checkRead = new List<Socket>();
@@ -112,12 +105,12 @@ namespace Server
 
                                     string username = Encoding.UTF8.GetString(buffer, 0, brBajta).Trim()                                    ;
 
-                                    IPEndPoint remoteEP = s.RemoteEndPoint as IPEndPoint;
-                                    IPAddress ip = remoteEP.Address;
-                                    IPAdreseIgraca.Add(ip);
+                                    //IPEndPoint remoteEP = s.RemoteEndPoint as IPEndPoint;
+                                    //IPAddress ip = remoteEP.Address;
+                                    //IPAdreseIgraca.Add(ip);
                                     Usernamovi.Add(username);
 
-                                    Console.WriteLine($"Prijavljen korisnik: {username}, IP: {ip}");
+                                    Console.WriteLine($"Prijavljen korisnik: {username} :: {s.RemoteEndPoint.ToString()}");
 
                                     s.Send(Encoding.UTF8.GetBytes("50032"));
 
@@ -136,7 +129,8 @@ namespace Server
                     
                     checkRead.Clear();
                 }
-
+                #endregion
+                #region UDP povezivanje
                 for (int i = 0; i < brojKorisnika; i++)
                     IgraciEP.Add(null);
 
@@ -182,28 +176,85 @@ namespace Server
                     }
 
                 }
-
-
+                #endregion
+                #region Inicijalizacija igraca, njihovih pozicija
                 int pocetnaPozicijaIgraca = velicinatable / 4;
 
                 for(int i = 0; i < 4; i++)
                 {
-                    string poruka = $"Vas username je {Usernamovi[i]}";
+                    string poruka = $"Potvrda povezivanja {Usernamovi[i]} sa serverom.";
                     byte[] bytes = Encoding.UTF8.GetBytes(poruka);
                     serverSocketUdp.SendTo(bytes, IgraciEP[i]);
 
                     Igraci[i] = new Korisnik(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Usernamovi[i], pocetnaPozicijaIgraca * i);
                 }
-
-
-
+                #endregion
                 Console.ReadLine();
-
             }
             catch (SocketException ex) { 
                 Console.WriteLine($"Doslo je do greske {ex}");
             
             }
+
+            try
+            {
+                // obavestenje svih o pocetku igre
+                Obavestenje_svih(IgraciEP, serverSocketUdp, 4);
+
+                serverSocketUdp.Blocking = true;
+                int igrac_na_redu = 0;
+                string poruka_o_bacanju = "\tSERVER : Molimo bacite kockicu.";
+                byte[] porukaBuffer = Encoding.UTF8.GetBytes(poruka_o_bacanju);
+                byte[] primljenaPoruka_buffer = new byte[1024];
+
+                EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+
+                do
+                {
+                    Console.WriteLine($"\tNa potezu igrac : {Igraci[igrac_na_redu].Username}");
+                    serverSocketUdp.SendTo(porukaBuffer, IgraciEP[igrac_na_redu]);
+                    int primljeno = serverSocketUdp.ReceiveFrom(primljenaPoruka_buffer, ref ep);
+                    if(ep.Equals(IgraciEP))
+                    {
+                        string broj_kockice_str = Encoding.UTF8.GetString(primljenaPoruka_buffer, 0, primljeno).Trim();
+                        int br_kockice = int.Parse(broj_kockice_str);
+
+                        // racunanje poteza
+                        List<Potez> moguci_potezi = Igraci[igrac_na_redu].MoguciPotezi(br_kockice, velicinatable);
+
+                    }
+
+                    igrac_na_redu = (igrac_na_redu + 1) % 4; // vrti se po modulu 4
+                } while (Uslov()); // treba da implementiram proveru uslova
+
+            }catch (SocketException ex)
+            {
+                Console.WriteLine($"Doslo je do greske :: {ex.Message}");
+            }
+
+
         }
+
+        static bool Uslov()// nije zavrsena funkcija
+        {
+            return true;
+        }
+
+        static bool Obavestenje_svih(List<IPEndPoint> igraci, Socket serverSocket,int broj_igraca)
+        {
+            string obavestenje = $"\t----------------------------{"IGRA JE POCELA", -20}----------------------------\n";
+            byte[] obavestenjeBuffer = Encoding.UTF8.GetBytes(obavestenje);
+            
+            Console.WriteLine(obavestenje);
+            for(int i = 0; i < broj_igraca; i++)
+            {
+                int br_byte = serverSocket.SendTo(obavestenjeBuffer, igraci[i]);
+                if (br_byte == 0)
+                    return false;
+            }
+            return true;
+        }
+
+        
     }
 }

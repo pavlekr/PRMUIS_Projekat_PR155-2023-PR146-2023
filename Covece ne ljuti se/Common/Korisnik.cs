@@ -70,6 +70,23 @@ namespace Common
                 Figure[i] = new Figura(Start);
             }
         }
+
+        public List<Potez> MoguciPotezi(int br_kockice, int velicina_table)
+        {
+            List<Potez> potezi = new List<Potez>();
+            foreach(Figura f in Figure)
+            {
+                if(br_kockice == 6 && f.Status == false && f.Pozicija == -1)
+                {
+                    potezi.Add(new Potez(f, TipAkcije.AKTIVACIJA, 0));
+                }
+                else if(f.Status == true && (f.Do_cilja - br_kockice) >= 0)
+                {
+                    potezi.Add(new Potez(f, TipAkcije.POMERANJE, br_kockice));
+                }
+            }
+            return potezi;
+        }
     }
 
     
