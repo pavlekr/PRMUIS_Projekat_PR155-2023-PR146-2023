@@ -61,6 +61,20 @@ namespace Server
             for (int i = 0; i < brojIgraca; i++)
                 Igraci.Add(null);
             serverSocket.Listen(brojIgraca);
+
+
+            /*string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            string clientPath = Path.Combine(
+                baseDir,
+                @"..\..\..\UDPClient\bin\Debug\UDPClient.exe"
+            );
+
+            clientPath = Path.GetFullPath(clientPath);
+
+            for(int i = 0; i < brojIgraca; i++)
+                Process.Start(clientPath);*/
+
             try
             {
 
@@ -203,7 +217,7 @@ namespace Server
                     byte[] bytes = Encoding.UTF8.GetBytes(poruka);
                     serverSocketUdp.SendTo(bytes, IgraciEP[i]);
 
-                    Igraci[i] = new Korisnik(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Usernamovi[i], pocetnaPozicijaIgraca * i, velicinatable);
+                    Igraci[i] = new Korisnik(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + i, Usernamovi[i], pocetnaPozicijaIgraca * i, velicinatable);
                 }
                 #endregion
                 //Console.ReadLine();
@@ -219,13 +233,13 @@ namespace Server
 
                 serverSocketUdp.Blocking = true;
                 int igrac_na_redu = 0;
-                string poruka_o_bacanju = "\tSERVER : Molimo bacite kockicu.";//treba da dodamo o bavestenje| ispred ovog stringa da znamo kad je novo bacanje kockice u klijentu
+                string poruka_o_bacanju = "\tOBAVESTENJE|SERVER : Molimo bacite kockicu.";//treba da dodamo o bavestenje| ispred ovog stringa da znamo kad je novo bacanje kockice u klijentu
                 byte[] porukaBuffer = Encoding.UTF8.GetBytes(poruka_o_bacanju);
                 byte[] primljenaPoruka_buffer = new byte[1024];
 
                 EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
 
-                do
+                while (Uslov())
                 {
                     Console.WriteLine($"\tNa potezu igrac : {Igraci[igrac_na_redu].Username}");
                     serverSocketUdp.SendTo(porukaBuffer, IgraciEP[igrac_na_redu]);
@@ -234,7 +248,7 @@ namespace Server
                     {
                         string broj_kockice_str = Encoding.UTF8.GetString(primljenaPoruka_buffer, 0, primljeno).Trim();
                         int br_kockice = int.Parse(broj_kockice_str);
-
+                        Console.WriteLine("DEBUG        " + br_kockice);
                         // racunanje poteza
                         List<Potez> moguci_potezi = Igraci[igrac_na_redu].MoguciPotezi(br_kockice, velicinatable);
                         byte[] dataBuffer = new byte[2048];
@@ -249,18 +263,21 @@ namespace Server
                         //treba da odigramo potez
 
                         byte[] prijemIzabraneopcije = new byte[10];
-                        serverSocketUdp.Receive(prijemIzabraneopcije);
+                        serverSocketUdp.ReceiveFrom(prijemIzabraneopcije, ref ep);
                         int opcija = int.Parse(Encoding.UTF8.GetString(prijemIzabraneopcije).Trim());
-
+                        Console.WriteLine($" DEBUG {opcija}");
                         //TREBA DA POZOVEMO FUNKCIJU ZA IGRANJE POTEZA
+                        if(opcija != -1)
+                        {
+                            OdigrajPotez(moguci_potezi[opcija], Igraci[igrac_na_redu], ref Igraci, velicinatable, IgraciEP, serverSocketUdp);
 
-
+                        }
                         if (br_kockice == 6)    // ako je igrac dobio 6
                             continue;           // ponovo igra
                     }
 
                     igrac_na_redu = (igrac_na_redu + 1) % brojIgraca; // vrti se po modulu broja igraca
-                } while (Uslov()); // treba da implementiram proveru uslova
+                } // treba da implementiram proveru uslova
 
             }catch (SocketException ex)
             {
@@ -297,78 +314,94 @@ namespace Server
             return true;
         }
 
-        public bool OdigrajPotez(Potez potez, Korisnik igrac, ref List<Korisnik> igraci,int velicinaTable, List<IPEndPoint> igraciEP, Socket ServerSocket)
+        static bool OdigrajPotez(Potez potez, Korisnik igrac, ref List<Korisnik> igraci,int velicinaTable, List<IPEndPoint> igraciEP, Socket ServerSocket)
         {
-            int pozicija = -1;
-            int indexOnogKoJeOdigraoPotez = -1;
-            string porukaPojeden = $"{igrac.Username} je pojeo ";
-
-            string odigranPotez = "Potez je odigran\n";
-            byte[] buffer = Encoding.UTF8.GetBytes(odigranPotez);
-
-            foreach (Korisnik i in igraci) 
+            try
             {
+                int pozicija = -1;
+                int indexOnogKoJeOdigraoPotez = -1;
+                string porukaPojeden = $"{igrac.Username} je pojeo ";
 
-                if(igrac.ID == i.ID)
+                string odigranPotez = "Potez je odigran\n";
+                byte[] buffer = Encoding.UTF8.GetBytes(odigranPotez);
+
+                foreach (Korisnik i in igraci)
                 {
-                    indexOnogKoJeOdigraoPotez = igraci.IndexOf(i);
-                    if(potez.Akcija == TipAkcije.AKTIVACIJA)
+
+                    if (igrac.ID == i.ID)
                     {
-                        for (int j = 0; j < 4; j++)
+                        indexOnogKoJeOdigraoPotez = igraci.IndexOf(i);
+                        Console.WriteLine($"Potez odigrao {i.Username}");
+                        odigranPotez += $" {i.Username}";
+                        if (potez.Akcija == TipAkcije.AKTIVACIJA)
                         {
-                            
-                            if(potez._Figura.ID == i.Figure[j].ID)
+                            for (int j = 0; j < 4; j++)
                             {
-                                i.Figure[j].Status = true;
-                                pozicija = i.Figure[j].Pozicija = i.Start;
-                                i.Figure[j].Do_cilja = velicinaTable - 2;
+
+                                if (potez._Figura.ID == i.Figure[j].ID)
+                                {
+                                    i.Figure[j].Status = true;
+                                    pozicija = i.Figure[j].Pozicija = i.Start;
+                                    i.Figure[j].Do_cilja = velicinaTable - 2;
+                                }
                             }
+
                         }
-                        
-                    }
-                    else
-                    {
-                        for (int j = 0; j < 4; j++)
+                        else
                         {
-                            if (potez._Figura.ID == i.Figure[j].ID)
+                            for (int j = 0; j < 4; j++)
                             {
-                                pozicija = i.Figure[j].Pozicija = (i.Figure[j].Pozicija + potez.Br_polja) % velicinaTable;
-                                i.Figure[j].Do_cilja -= potez.Br_polja;
+                                if (potez._Figura.ID == i.Figure[j].ID)
+                                {
+                                    pozicija = i.Figure[j].Pozicija = (i.Figure[j].Pozicija + potez.Br_polja) % velicinaTable;
+                                    i.Figure[j].Do_cilja -= potez.Br_polja;
+
+                                    if (i.Figure[j].Do_cilja == 0)
+                                    {
+                                        i.Figure[j].Status = false;
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (pozicija != -1)
-            {
-                foreach(Korisnik i in igraci)
+                if (pozicija != -1)
                 {
-                    if(igrac.ID != i.ID)
+                    foreach (Korisnik i in igraci)
                     {
-                        for(int j  = 0; j < 4;j++)
+                        if (igrac.ID != i.ID)
                         {
-                            if (i.Figure[j].Pozicija == pozicija)
+                            for (int j = 0; j < 4; j++)
                             {
-                                i.Figure[j].Do_cilja = -1;
-                                i.Figure[j].Status = false;
-                                i.Figure[j].Pozicija = -1;
-                                porukaPojeden = porukaPojeden + i.Username;
+                                if (i.Figure[j].Pozicija == pozicija)
+                                {
+                                    i.Figure[j].Do_cilja = velicinaTable - 2;
+                                    i.Figure[j].Status = false;
+                                    i.Figure[j].Pozicija = -1;
+                                    porukaPojeden = porukaPojeden + i.Username;
 
-                                Console.WriteLine(porukaPojeden);
-                                byte[] bufferPojeden = Encoding.UTF8.GetBytes(porukaPojeden);
-                                ServerSocket.SendTo(bufferPojeden, igraciEP[igraci.IndexOf(i)]);
-                                ServerSocket.SendTo(bufferPojeden, igraciEP[indexOnogKoJeOdigraoPotez]);
-                                return true;
+                                    Console.WriteLine(porukaPojeden);
+                                    byte[] bufferPojeden = Encoding.UTF8.GetBytes(porukaPojeden);
+                                    ServerSocket.SendTo(bufferPojeden, igraciEP[igraci.IndexOf(i)]);
+                                    ServerSocket.SendTo(bufferPojeden, igraciEP[indexOnogKoJeOdigraoPotez]);
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            Console.WriteLine($"\t{odigranPotez}");
-            ServerSocket.SendTo(buffer, igraciEP[indexOnogKoJeOdigraoPotez]);
-            return true;
+                Console.WriteLine($"\t{odigranPotez}");
+                ServerSocket.SendTo(buffer, igraciEP[indexOnogKoJeOdigraoPotez]);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
+            
         }
         
     }

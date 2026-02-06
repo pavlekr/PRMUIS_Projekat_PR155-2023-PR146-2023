@@ -69,7 +69,7 @@ namespace Common
 
             for(int i = 0; i < 4; i++)
             {
-                Figure.Add(new Figura(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),Start));
+                Figure.Add(new Figura(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + i,velicina_table-2));
             }
         }
 
@@ -79,10 +79,16 @@ namespace Common
             
             foreach(Figura f in Figure)
             {
-                int narednaPozicija = -1;
+                int narednaPozicija = -1, poz = -1;
                 if (br_kockice == 6 && f.Status == false && f.Pozicija == -1)
                 {
-                    potezi.Add(new Potez(f, TipAkcije.AKTIVACIJA, 0));
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (Start == Figure[i].Pozicija)
+                            poz = Start;
+                    }
+                    if(poz == -1)
+                        potezi.Add(new Potez(f, TipAkcije.AKTIVACIJA, 0));
                 }
                 else if(f.Status == true && (f.Do_cilja - br_kockice) >= 0)
                 {

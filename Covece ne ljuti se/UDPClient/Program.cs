@@ -65,57 +65,76 @@ namespace Client
 
             SocketUdp.Blocking = true;
             // pocela igra obavestenje
+            Console.WriteLine("@@@@@@@@@@");
             int n = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);
             Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, n).Trim());
             do
             {
                 //obavestenje da je igrac na potezu
-                SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
-                Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, n).Trim());
-                string rez = "";
-                do
+                Console.WriteLine("##########");
+                int br = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
+                string poruka = Encoding.UTF8.GetString(buffer, 0, br).Trim();
+                Console.WriteLine("************");
+                if (poruka.StartsWith("OBAVESTENJE|"))
                 {
-                    Console.WriteLine(" 1 - Baci kockicu");
-                    rez = Console.ReadLine().Trim();
-                } while (rez != "1");
-
-                Random rand = new Random();
-                int br_kockice = 1 + rand.Next() % 6;
-                Console.WriteLine($"Dobili ste {br_kockice}");
-                byte[] slanje_buffer = Encoding.UTF8.GetBytes(br_kockice.ToString());
-                SocketUdp.SendTo(slanje_buffer, ServerUdpEP);
-
-                byte[] dataBuffer = new byte[2048];
-                List<Potez> moguci_potezi = new List<Potez>();
-                // primanje mogucih poteza
-                SocketUdp.Receive(dataBuffer);
-                using (MemoryStream ms = new MemoryStream(dataBuffer))
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    moguci_potezi = (List<Potez>)bf.Deserialize(ms);
-                }
-                Console.WriteLine("\tMoguci potezi:");
-                if (moguci_potezi.Count > 0)
-                {
-                    for (int i = 0; i < moguci_potezi.Count; i++)
-                    {
-                        Console.WriteLine($" {i} - {moguci_potezi[i].Akcija.ToString()} Pozicija : {moguci_potezi[i]._Figura.Pozicija} Do cilja: {moguci_potezi[i]._Figura.Do_cilja}");
-                    }
-                    int opcija = -1;
+                    //poruka = poruka.Substring("OBAVESTENJE|".Length);
+                    Console.WriteLine(poruka);
+                    string rez = "";
                     do
                     {
-                        Console.WriteLine("\n-----------------------------");
-                        Console.Write("Opcija : ");
-                        opcija = int.Parse(Console.ReadLine());
-                    } while (opcija < 0 || opcija >= moguci_potezi.Count);
+                        Console.WriteLine(" 1 - Baci kockicu");
+                        rez = Console.ReadLine().Trim();
+                    } while (rez != "1");
 
-                    //slanje zeljene opcije
-                    byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
-                    SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
+                    Random rand = new Random();
+                    int br_kockice = 1 + rand.Next() % 6;
+                    Console.WriteLine($"Dobili ste {br_kockice}");
+                    byte[] slanje_buffer = Encoding.UTF8.GetBytes(br_kockice.ToString());
+                    SocketUdp.SendTo(slanje_buffer, ServerUdpEP);
+
+                    byte[] dataBuffer = new byte[2048];
+                    List<Potez> moguci_potezi = new List<Potez>();
+                    // primanje mogucih poteza
+                    SocketUdp.Receive(dataBuffer);
+                    using (MemoryStream ms = new MemoryStream(dataBuffer))
+                    {
+                        BinaryFormatter bf = new BinaryFormatter();
+                        moguci_potezi = (List<Potez>)bf.Deserialize(ms);
+                    }
+                    Console.WriteLine("\tMoguci potezi:");
+                    if (moguci_potezi.Count > 0)
+                    {
+                        for (int i = 0; i < moguci_potezi.Count; i++)
+                        {
+                            Console.WriteLine($" {i} - {moguci_potezi[i]._Figura.ID} {moguci_potezi[i]._Figura.ToString()} {moguci_potezi[i].Akcija.ToString()} Pozicija : {moguci_potezi[i]._Figura.Pozicija} Do cilja: {moguci_potezi[i]._Figura.Do_cilja}");
+                        }
+                        int opcija = -1;
+                        do
+                        {
+                            Console.WriteLine("\n-----------------------------");
+                            Console.Write("Opcija : ");
+                            opcija = int.Parse(Console.ReadLine());
+                        } while (opcija < 0 || opcija >= moguci_potezi.Count);
+
+                        //slanje zeljene opcije
+                        byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
+                        SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
+                        Console.WriteLine("//////////////");
+                    }
+                    else
+                    {
+                        Console.WriteLine(" Nema mogucih poteza.");
+                        byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes((-1).ToString());
+                        SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
+                        Console.WriteLine("//////////////");
+                    }
+                        
                 }
                 else
-                    Console.WriteLine(" Nema mogucih poteza.");
-
+                {
+                    Console.WriteLine(poruka);
+                    continue;
+                }
                 //Console.ReadLine();
 
             } while (Uslov_igranja());
