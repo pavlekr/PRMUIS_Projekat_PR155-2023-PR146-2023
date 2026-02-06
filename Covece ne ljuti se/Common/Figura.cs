@@ -9,11 +9,16 @@ namespace Common
     [Serializable]
     public class Figura
     {
-        
+        long id;
         private int pozicija;
         private bool status; // aktivna/neaktivna
         private int do_cilja;
 
+        public long ID
+        {
+            get { return id; }
+            set { id = value; }
+        }
         public int Pozicija
         {
             get {  return pozicija; }
@@ -33,13 +38,15 @@ namespace Common
 
         public Figura()
         {
+            ID = 0;
             Pozicija = -1;
             Status = false;
             Do_cilja = 0;
         }
 
-        public Figura(int br_polja)
+        public Figura(long id, int br_polja)
         {
+            ID = id;
             Pozicija = -1;
             Do_cilja = br_polja;
             Status = false;

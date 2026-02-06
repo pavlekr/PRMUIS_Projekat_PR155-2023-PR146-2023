@@ -17,7 +17,6 @@ namespace Common
     public enum TipAkcije
     {
         AKTIVACIJA,
-        DEAKTIVACIJA,
         POMERANJE
     }
 

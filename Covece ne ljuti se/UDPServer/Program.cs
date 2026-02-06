@@ -219,7 +219,7 @@ namespace Server
 
                 serverSocketUdp.Blocking = true;
                 int igrac_na_redu = 0;
-                string poruka_o_bacanju = "\tSERVER : Molimo bacite kockicu.";
+                string poruka_o_bacanju = "\tSERVER : Molimo bacite kockicu.";//treba da dodamo o bavestenje| ispred ovog stringa da znamo kad je novo bacanje kockice u klijentu
                 byte[] porukaBuffer = Encoding.UTF8.GetBytes(poruka_o_bacanju);
                 byte[] primljenaPoruka_buffer = new byte[1024];
 
@@ -246,7 +246,13 @@ namespace Server
                         }
                         serverSocketUdp.SendTo(dataBuffer, IgraciEP[igrac_na_redu]); // poslao moguce poteze
 
+                        //treba da odigramo potez
 
+                        byte[] prijemIzabraneopcije = new byte[10];
+                        serverSocketUdp.Receive(prijemIzabraneopcije);
+                        int opcija = int.Parse(Encoding.UTF8.GetString(prijemIzabraneopcije).Trim());
+
+                        //TREBA DA POZOVEMO FUNKCIJU ZA IGRANJE POTEZA
 
 
                         if (br_kockice == 6)    // ako je igrac dobio 6
@@ -291,6 +297,79 @@ namespace Server
             return true;
         }
 
+        public bool OdigrajPotez(Potez potez, Korisnik igrac, ref List<Korisnik> igraci,int velicinaTable, List<IPEndPoint> igraciEP, Socket ServerSocket)
+        {
+            int pozicija = -1;
+            int indexOnogKoJeOdigraoPotez = -1;
+            string porukaPojeden = $"{igrac.Username} je pojeo ";
+
+            string odigranPotez = "Potez je odigran\n";
+            byte[] buffer = Encoding.UTF8.GetBytes(odigranPotez);
+
+            foreach (Korisnik i in igraci) 
+            {
+
+                if(igrac.ID == i.ID)
+                {
+                    indexOnogKoJeOdigraoPotez = igraci.IndexOf(i);
+                    if(potez.Akcija == TipAkcije.AKTIVACIJA)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            
+                            if(potez._Figura.ID == i.Figure[j].ID)
+                            {
+                                i.Figure[j].Status = true;
+                                pozicija = i.Figure[j].Pozicija = i.Start;
+                                i.Figure[j].Do_cilja = velicinaTable - 2;
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (potez._Figura.ID == i.Figure[j].ID)
+                            {
+                                pozicija = i.Figure[j].Pozicija = (i.Figure[j].Pozicija + potez.Br_polja) % velicinaTable;
+                                i.Figure[j].Do_cilja -= potez.Br_polja;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (pozicija != -1)
+            {
+                foreach(Korisnik i in igraci)
+                {
+                    if(igrac.ID != i.ID)
+                    {
+                        for(int j  = 0; j < 4;j++)
+                        {
+                            if (i.Figure[j].Pozicija == pozicija)
+                            {
+                                i.Figure[j].Do_cilja = -1;
+                                i.Figure[j].Status = false;
+                                i.Figure[j].Pozicija = -1;
+                                porukaPojeden = porukaPojeden + i.Username;
+
+                                Console.WriteLine(porukaPojeden);
+                                byte[] bufferPojeden = Encoding.UTF8.GetBytes(porukaPojeden);
+                                ServerSocket.SendTo(bufferPojeden, igraciEP[igraci.IndexOf(i)]);
+                                ServerSocket.SendTo(bufferPojeden, igraciEP[indexOnogKoJeOdigraoPotez]);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine($"\t{odigranPotez}");
+            ServerSocket.SendTo(buffer, igraciEP[indexOnogKoJeOdigraoPotez]);
+            return true;
+        }
         
     }
 }

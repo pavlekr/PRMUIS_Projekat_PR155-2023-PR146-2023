@@ -70,7 +70,7 @@ namespace Client
             do
             {
                 //obavestenje da je igrac na potezu
-                SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);
+                SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
                 Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, n).Trim());
                 string rez = "";
                 do
@@ -108,11 +108,15 @@ namespace Client
                         Console.Write("Opcija : ");
                         opcija = int.Parse(Console.ReadLine());
                     } while (opcija < 0 || opcija >= moguci_potezi.Count);
+
+                    //slanje zeljene opcije
+                    byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
+                    SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
                 }
                 else
                     Console.WriteLine(" Nema mogucih poteza.");
 
-                Console.ReadLine();
+                //Console.ReadLine();
 
             } while (Uslov_igranja());
         }
