@@ -77,7 +77,7 @@ namespace Client
                 Console.WriteLine("************");
                 if (poruka.StartsWith("OBAVESTENJE|"))
                 {
-                    //poruka = poruka.Substring("OBAVESTENJE|".Length);
+                    poruka = poruka.Substring("OBAVESTENJE|".Length);
                     Console.WriteLine(poruka);
                     string rez = "";
                     do
@@ -109,12 +109,13 @@ namespace Client
                             Console.WriteLine($" {i} - {moguci_potezi[i]._Figura.ID} {moguci_potezi[i]._Figura.ToString()} {moguci_potezi[i].Akcija.ToString()} Pozicija : {moguci_potezi[i]._Figura.Pozicija} Do cilja: {moguci_potezi[i]._Figura.Do_cilja}");
                         }
                         int opcija = -1;
+                        bool validno = false;
                         do
                         {
                             Console.WriteLine("\n-----------------------------");
                             Console.Write("Opcija : ");
-                            opcija = int.Parse(Console.ReadLine());
-                        } while (opcija < 0 || opcija >= moguci_potezi.Count);
+                            validno = int.TryParse(Console.ReadLine(), out opcija);
+                        } while (opcija < 0 || opcija >= moguci_potezi.Count || !validno);
 
                         //slanje zeljene opcije
                         byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
@@ -129,6 +130,12 @@ namespace Client
                         Console.WriteLine("//////////////");
                     }
                         
+                }
+                else if(poruka.StartsWith("POBEDA|"))
+                {
+                    poruka = poruka.Substring("POBEDA|".Length);
+                    Console.WriteLine(poruka);
+                    break;
                 }
                 else
                 {

@@ -239,7 +239,7 @@ namespace Server
 
                 EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
 
-                while (Uslov())
+                while (!Kraj(Igraci, IgraciEP, serverSocket))
                 {
                     Console.WriteLine($"\tNa potezu igrac : {Igraci[igrac_na_redu].Username}");
                     serverSocketUdp.SendTo(porukaBuffer, IgraciEP[igrac_na_redu]);
@@ -287,9 +287,35 @@ namespace Server
 
         }
 
-        static bool Uslov()// nije zavrsena funkcija
+        static bool Kraj(List<Korisnik> igraci, List<IPEndPoint> igraciEP, Socket serverSocket)// nije zavrsena funkcija
         {
-            return true;
+            foreach (Korisnik igrac in igraci)
+            {
+                int u_kucici = 0;
+                for (int i = 0; i < igrac.Figure.Count; i++)
+                {
+                    if (igrac.Figure[i].Status == false && igrac.Figure[i].Do_cilja == 0)
+                        u_kucici++;
+                }
+
+                if (u_kucici == 4)
+                {
+                    Obavesti_o_kraju(igrac.Username, igraciEP, serverSocket);
+                   return true;// ako ima 4 figure u kucici kraj igre
+                }
+                   
+            }
+            return false;
+        }
+
+        static void Obavesti_o_kraju(string username, List<IPEndPoint> IgraciEP, Socket serverSocket)
+        {
+            string obavestenje = $"POBEDA|Pobedio je igrac {username}\n";
+            foreach(IPEndPoint ep in IgraciEP)
+            {
+                serverSocket.SendTo(Encoding.UTF8.GetBytes(obavestenje), ep);
+            }
+            Console.WriteLine(obavestenje);
         }
 
         static bool Obavestenje_svih(List<IPEndPoint> igraci, Socket serverSocket,int broj_igraca)
@@ -359,6 +385,9 @@ namespace Server
                                     if (i.Figure[j].Do_cilja == 0)
                                     {
                                         i.Figure[j].Status = false;
+                                        string poruka = "USLI STE U KUCICU";
+                                        ServerSocket.SendTo(Encoding.UTF8.GetBytes(poruka), igraciEP[indexOnogKoJeOdigraoPotez]);
+
                                     }
                                 }
                             }
