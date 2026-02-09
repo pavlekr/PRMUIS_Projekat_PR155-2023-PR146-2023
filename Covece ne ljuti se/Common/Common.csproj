@@ -45,6 +45,7 @@
     <Compile Include="Igra.cs" />
     <Compile Include="Korisnik.cs" />
     <Compile Include="Figura.cs" />
+    <Compile Include="PomocnaFunkcija.cs" />
     <Compile Include="Potez.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

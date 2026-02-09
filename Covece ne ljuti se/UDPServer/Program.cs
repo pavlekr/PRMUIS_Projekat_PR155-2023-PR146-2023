@@ -239,7 +239,7 @@ namespace Server
 
                 EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
 
-                while (!Kraj(Igraci, IgraciEP, serverSocket))
+                while (!Kraj(Igraci, IgraciEP, serverSocketUdp))
                 {
                     Console.WriteLine($"\tNa potezu igrac : {Igraci[igrac_na_redu].Username}");
                     serverSocketUdp.SendTo(porukaBuffer, IgraciEP[igrac_na_redu]);
@@ -248,7 +248,7 @@ namespace Server
                     {
                         string broj_kockice_str = Encoding.UTF8.GetString(primljenaPoruka_buffer, 0, primljeno).Trim();
                         int br_kockice = int.Parse(broj_kockice_str);
-                        Console.WriteLine("DEBUG        " + br_kockice);
+                        //Console.WriteLine("DEBUG        " + br_kockice);
                         // racunanje poteza
                         List<Potez> moguci_potezi = Igraci[igrac_na_redu].MoguciPotezi(br_kockice, velicinatable);
                         byte[] dataBuffer = new byte[2048];
@@ -265,11 +265,21 @@ namespace Server
                         byte[] prijemIzabraneopcije = new byte[10];
                         serverSocketUdp.ReceiveFrom(prijemIzabraneopcije, ref ep);
                         int opcija = int.Parse(Encoding.UTF8.GetString(prijemIzabraneopcije).Trim());
-                        Console.WriteLine($" DEBUG {opcija}");
+                        //Console.WriteLine($" DEBUG {opcija}");
                         //TREBA DA POZOVEMO FUNKCIJU ZA IGRANJE POTEZA
                         if(opcija != -1)
                         {
                             OdigrajPotez(moguci_potezi[opcija], Igraci[igrac_na_redu], ref Igraci, velicinatable, IgraciEP, serverSocketUdp);
+                            PomocneFunkcije pf = new PomocneFunkcije();
+                            byte[] nizBajtova = Encoding.UTF8.GetBytes(pf.IspisIzvestaja(Igraci));
+
+                            for (int i = 0; i < Igraci.Count; i++)
+                            {
+                                serverSocketUdp.SendTo(nizBajtova, IgraciEP[i]);
+                            }
+                            Console.WriteLine(pf.IspisIzvestaja(Igraci));
+                            
+                            
 
                         }
                         if (br_kockice == 6)    // ako je igrac dobio 6

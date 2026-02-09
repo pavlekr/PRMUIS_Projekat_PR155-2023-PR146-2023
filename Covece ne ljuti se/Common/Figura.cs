@@ -54,7 +54,20 @@ namespace Common
 
         public override string ToString()
         {
-            return $"Pijun: {Pozicija}, ({Do_cilja})";
+            string rez = string.Empty;
+            if (Do_cilja == 0 && Status == false)
+            {
+                rez = "Pijun: U CILJU";
+            }
+            else if (Status == false && Pozicija == -1)
+            {
+                rez = "Pijun: U KUCICI";
+            }
+            else if(Status  == true) 
+            {
+                rez = $"Pijun: [{Pozicija}], ({Do_cilja})";
+            }
+            return rez;
         }
     }
 }
