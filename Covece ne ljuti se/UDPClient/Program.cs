@@ -27,7 +27,7 @@ namespace Client
                 clientSocket.Connect(serverEP);
                 Console.WriteLine("Korisnik je uspesno povezan sa serverom!");
             }
-            catch(SocketException ex)
+            catch (SocketException ex)
             {
                 Console.WriteLine($"Greska pri povezivanju {ex.Message}!");
                 return;
@@ -36,28 +36,28 @@ namespace Client
             int brBajta = 0;
             try
             {
-                    Console.WriteLine("Unesite korisnicko ime: ");
-                    string username = Console.ReadLine();
+                Console.WriteLine("Unesite korisnicko ime: ");
+                string username = Console.ReadLine();
 
-                    clientSocket.Send(Encoding.UTF8.GetBytes(username));
-                    clientSocket.Receive(buffer);
-                    string port = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine($"Port je: {port}");
-                    port = port.Trim();
+                clientSocket.Send(Encoding.UTF8.GetBytes(username));
+                clientSocket.Receive(buffer);
+                string port = Encoding.UTF8.GetString(buffer);
+                Console.WriteLine($"Port je: {port}");
+                port = port.Trim();
 
-                    int udpPort = int.Parse(port);
-                    ServerUdpEP = new IPEndPoint(IPAddress.Loopback, udpPort);
+                int udpPort = int.Parse(port);
+                ServerUdpEP = new IPEndPoint(IPAddress.Loopback, udpPort);
 
-                    string poruka = "HELLO|" + username;
-                    byte[] data = Encoding.UTF8.GetBytes(poruka);
-                   SocketUdp.SendTo(data, ServerUdpEP);
+                string poruka = "HELLO|" + username;
+                byte[] data = Encoding.UTF8.GetBytes(poruka);
+                SocketUdp.SendTo(data, ServerUdpEP);
 
                 // prijem potvrde povezivanja
                 SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);
-                Console.WriteLine(Encoding.UTF8.GetString(buffer));   
+                Console.WriteLine(Encoding.UTF8.GetString(buffer));
             }
 
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine($"Doslo je do greske {ex.Message}!");
             }
@@ -65,17 +65,16 @@ namespace Client
 
             SocketUdp.Blocking = true;
             // pocela igra obavestenje
-            //Console.WriteLine("@@@@@@@@@@");
+            Console.WriteLine("@@@@@@@@@@");
             int n = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);
             Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, n).Trim());
             do
             {
-                byte[] buffer10= new byte[2048];
                 //obavestenje da je igrac na potezu
-                //Console.WriteLine("##########");
-                int br = SocketUdp.ReceiveFrom(buffer10, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
-                string poruka = Encoding.UTF8.GetString(buffer10, 0, br).Trim('\0', ' ', '\r', '\n', '\t');
-                //Console.WriteLine("************");
+                Console.WriteLine("##########");
+                int br = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
+                string poruka = Encoding.UTF8.GetString(buffer, 0, br).Trim();
+                Console.WriteLine("************");
                 if (poruka.StartsWith("OBAVESTENJE|"))
                 {
                     poruka = poruka.Substring("OBAVESTENJE|".Length);
@@ -121,22 +120,23 @@ namespace Client
                         //slanje zeljene opcije
                         byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
                         SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
-                        //Console.WriteLine("//////////////");
+                        Console.WriteLine("//////////////");
+                    byte[] buffer1 = new byte[3048];
+                    SocketUdp.Receive(buffer1);
+                    string poruka1 = Encoding.UTF8.GetString(buffer1).Trim();
+                    Console.WriteLine(poruka1);
                     }
                     else
                     {
                         Console.WriteLine(" Nema mogucih poteza.");
                         byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes((-1).ToString());
                         SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
-                        //Console.WriteLine("//////////////");
+                        Console.WriteLine("//////////////");
                     }
 
-                    byte[] buffer1 = new byte[2048];
-                    SocketUdp.Receive(buffer1);
-                    string poruka1 = Encoding.UTF8.GetString(buffer1).Trim();
-                    Console.WriteLine(poruka1);
+
                 }
-                else if(poruka.StartsWith("POBEDA|"))
+                else if (poruka.StartsWith("POBEDA|"))
                 {
                     poruka = poruka.Substring("POBEDA|".Length);
                     Console.WriteLine(poruka);
@@ -149,11 +149,7 @@ namespace Client
                 }
                 //Console.ReadLine();
 
-            } while (Uslov_igranja());
-        }
-        static bool Uslov_igranja()
-        {
-            return true;
+            } while (true);
         }
     }
 }

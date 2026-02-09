@@ -310,7 +310,7 @@ namespace Server
 
                 if (u_kucici == 4)
                 {
-                    Obavesti_o_kraju(igrac.Username, igraciEP, serverSocket);
+                    Obavesti_o_kraju(igrac.Username, igraciEP, serverSocket, igraci);
                    return true;// ako ima 4 figure u kucici kraj igre
                 }
                    
@@ -318,9 +318,11 @@ namespace Server
             return false;
         }
 
-        static void Obavesti_o_kraju(string username, List<IPEndPoint> IgraciEP, Socket serverSocket)
+        static void Obavesti_o_kraju(string username, List<IPEndPoint> IgraciEP, Socket serverSocket, List<Korisnik> igraci)
         {
             string obavestenje = $"POBEDA|Pobedio je igrac {username}\n";
+            PomocneFunkcije pf = new PomocneFunkcije();
+            obavestenje += pf.IspisIzvestaja(igraci);
             foreach(IPEndPoint ep in IgraciEP)
             {
                 serverSocket.SendTo(Encoding.UTF8.GetBytes(obavestenje), ep);
@@ -395,7 +397,7 @@ namespace Server
                                     if (i.Figure[j].Do_cilja == 0)
                                     {
                                         i.Figure[j].Status = false;
-                                        string poruka = "USLI STE U KUCICU";
+                                        string poruka = "USLI STE U CILJ";
                                         ServerSocket.SendTo(Encoding.UTF8.GetBytes(poruka), igraciEP[indexOnogKoJeOdigraoPotez]);
 
                                     }
@@ -413,7 +415,7 @@ namespace Server
                         {
                             for (int j = 0; j < 4; j++)
                             {
-                                if (i.Figure[j].Pozicija == pozicija)
+                                if (i.Figure[j].Pozicija == pozicija && i.Figure[j].Status == true)
                                 {
                                     i.Figure[j].Do_cilja = velicinaTable - 2;
                                     i.Figure[j].Status = false;
