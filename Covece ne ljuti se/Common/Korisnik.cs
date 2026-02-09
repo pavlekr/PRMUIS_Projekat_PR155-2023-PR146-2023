@@ -94,8 +94,10 @@ namespace Common
                 {
                     for (int i = 0; i < 4; i++) 
                     {
-                        if ((f.Pozicija + br_kockice) % velicina_table == Figure[i].Pozicija)
+                        if ((f.Pozicija + br_kockice) % velicina_table == Figure[i].Pozicija && Figure[i].Status == true)
+                        {
                             narednaPozicija = Figure[i].Pozicija;
+                        }
                     }
                     if(narednaPozicija == -1)
                         potezi.Add(new Potez(f, TipAkcije.POMERANJE, br_kockice));

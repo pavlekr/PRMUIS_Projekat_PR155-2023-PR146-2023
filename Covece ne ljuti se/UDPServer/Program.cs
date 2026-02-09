@@ -40,7 +40,7 @@ namespace Server
             List<string> Usernamovi = new List<string>();
 
             byte[] buffer = new byte[1024];
-            bool kraj = false;
+            bool tacno = false;
             EndPoint posiljaocEP = new IPEndPoint(IPAddress.Any, 0);
             List<IPEndPoint> IgraciEP = new List<IPEndPoint>();
             int velicinatable = 0;
@@ -49,21 +49,21 @@ namespace Server
             do
             {
                 Console.Write("\nUnesite broj igraca : ");
-                brojIgraca = int.Parse(Console.ReadLine());
-            } while (brojIgraca < 2 || brojIgraca > 4);
+                tacno = int.TryParse(Console.ReadLine(), out brojIgraca);
+            } while (brojIgraca < 2 || brojIgraca > 4 || !tacno);
 
             do
             {
                 Console.Write("\nUnesite velicinu table : ");
-                velicinatable = int.Parse(Console.ReadLine());
-            } while (velicinatable % brojIgraca != 0 || velicinatable < 16);
+                tacno = int.TryParse(Console.ReadLine(), out velicinatable);
+            } while (velicinatable % brojIgraca != 0 || velicinatable < 16 || !tacno);
             
             for (int i = 0; i < brojIgraca; i++)
                 Igraci.Add(null);
             serverSocket.Listen(brojIgraca);
 
 
-            /*string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
             string clientPath = Path.Combine(
                 baseDir,
@@ -73,7 +73,7 @@ namespace Server
             clientPath = Path.GetFullPath(clientPath);
 
             for(int i = 0; i < brojIgraca; i++)
-                Process.Start(clientPath);*/
+                Process.Start(clientPath);
 
             try
             {
@@ -225,7 +225,7 @@ namespace Server
             catch (SocketException ex) { 
                 Console.WriteLine($"Doslo je do greske {ex}");
             }
-
+            #region IGRA
             try
             {
                 // obavestenje svih o pocetku igre
@@ -293,10 +293,10 @@ namespace Server
             {
                 Console.WriteLine($"Doslo je do greske :: {ex.Message}");
             }
-
+        #endregion
 
         }
-
+        #region FUNKCIJE
         static bool Kraj(List<Korisnik> igraci, List<IPEndPoint> igraciEP, Socket serverSocket)// nije zavrsena funkcija
         {
             foreach (Korisnik igrac in igraci)
@@ -334,7 +334,7 @@ namespace Server
         {
             try
             {
-                string obavestenje = $"----------------------------{"IGRA JE POCELA",-20}----------------------------\n";
+                string obavestenje = "============================  IGRA JE POCELA  ============================\n";
                 byte[] obavestenjeBuffer = Encoding.UTF8.GetBytes(obavestenje);
 
                 Console.WriteLine(obavestenje);
@@ -444,6 +444,7 @@ namespace Server
             }
             
         }
-        
+        #endregion
+
     }
 }

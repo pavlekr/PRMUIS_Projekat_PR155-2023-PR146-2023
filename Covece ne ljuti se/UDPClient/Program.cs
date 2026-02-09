@@ -65,16 +65,16 @@ namespace Client
 
             SocketUdp.Blocking = true;
             // pocela igra obavestenje
-            Console.WriteLine("@@@@@@@@@@");
+            //Console.WriteLine("@@@@@@@@@@");
             int n = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);
             Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, n).Trim());
             do
             {
                 //obavestenje da je igrac na potezu
-                Console.WriteLine("##########");
+                //Console.WriteLine("##########");
                 int br = SocketUdp.ReceiveFrom(buffer, ref ServerUdpEP);//TREBA DA NAPRAVIO DA PREPOZNAJEMO KAD JE OBAVESTENJE ZA BAcANJE KOCKICE A KAD JE NEKO DRUGO OBAVESTENJE
                 string poruka = Encoding.UTF8.GetString(buffer, 0, br).Trim();
-                Console.WriteLine("************");
+                //Console.WriteLine("************");
                 if (poruka.StartsWith("OBAVESTENJE|"))
                 {
                     poruka = poruka.Substring("OBAVESTENJE|".Length);
@@ -106,7 +106,7 @@ namespace Client
                     {
                         for (int i = 0; i < moguci_potezi.Count; i++)
                         {
-                            Console.WriteLine($" {i} - {moguci_potezi[i]._Figura.ID} {moguci_potezi[i]._Figura.ToString()} {moguci_potezi[i].Akcija.ToString()} Pozicija : {moguci_potezi[i]._Figura.Pozicija} Do cilja: {moguci_potezi[i]._Figura.Do_cilja}");
+                            Console.WriteLine($" {i} - {moguci_potezi[i].Akcija.ToString()} {moguci_potezi[i]._Figura.ToString()}");
                         }
                         int opcija = -1;
                         bool validno = false;
@@ -120,7 +120,7 @@ namespace Client
                         //slanje zeljene opcije
                         byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes(opcija.ToString());
                         SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
-                        Console.WriteLine("//////////////");
+                        //Console.WriteLine("//////////////");
                     byte[] buffer1 = new byte[3048];
                     SocketUdp.Receive(buffer1);
                     string poruka1 = Encoding.UTF8.GetString(buffer1).Trim();
@@ -131,7 +131,7 @@ namespace Client
                         Console.WriteLine(" Nema mogucih poteza.");
                         byte[] opcijaKojaSeSalje = Encoding.UTF8.GetBytes((-1).ToString());
                         SocketUdp.SendTo(opcijaKojaSeSalje, ServerUdpEP);
-                        Console.WriteLine("//////////////");
+                        //Console.WriteLine("//////////////");
                     }
 
 
@@ -139,7 +139,8 @@ namespace Client
                 else if (poruka.StartsWith("POBEDA|"))
                 {
                     poruka = poruka.Substring("POBEDA|".Length);
-                    Console.WriteLine(poruka);
+                    Console.Clear();
+                    Console.WriteLine($"\t{poruka}");
                     break;
                 }
                 else
